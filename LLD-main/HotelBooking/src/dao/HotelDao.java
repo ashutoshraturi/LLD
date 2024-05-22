@@ -15,7 +15,7 @@ public class HotelDao {
     private Map<Integer, Map<LocalDate, Map<RoomType, Integer>>> availableRooms;
     private Map<Integer, Map<LocalDate, Map<RoomType, Integer>>> bookedRooms;
 
-    private static HotelDao instance = null;
+    private static volatile HotelDao instance = null;
     private HotelDao() {
         this.hotelMap = new HashMap<>();
         this.availableRooms = new HashMap<>();
@@ -23,10 +23,15 @@ public class HotelDao {
     }
 
     public static HotelDao getInstance(){
-        if(instance == null){
-            instance = new HotelDao();
+        HotelDao hotelDao = instance
+        if(hotelDao != null){
+            return hotelDao;
         }
-        return instance;
+        synchronized(HotelDao.Class){
+            if(instance == null)
+                    instance = new HotelDao();
+            return instance;
+        }
     }
 
     public Map<Integer, Hotel> getHotelMap() {
