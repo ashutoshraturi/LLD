@@ -1,0 +1,55 @@
+import com.sun.net.httpserver.HttpServer;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpExchange;
+import java.io.IOException;
+import java.io.OutputStream;
+
+public class SimpleRESTApi {
+    public static void main(String[] args) throws Exception {
+        // Create a new HTTP server on port 8000
+        HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
+
+        // Create a context for the root path "/"
+        server.createContext("/", new MyHandler());
+
+        // Start the server
+        server.start();
+
+        System.out.println("Server is running on port 8000");
+    }
+
+    static class MyHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            // Handle incoming HTTP requests
+            String requestMethod = exchange.getRequestMethod();
+
+            if (requestMethod.equalsIgnoreCase("GET")) {
+                // Handle GET request
+                handleGetRequest(exchange);
+            } else {
+                // Handle other request methods (POST, PUT, DELETE, etc.)
+                handleMethodNotAllowed(exchange);
+            }
+        }
+
+        private void handleGetRequest(HttpExchange exchange) throws IOException {
+            // Set response headers
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, 0);
+
+            // Write response body
+            String response = "{\"message\": \"Hello, World!\"}";
+            OutputStream os = exchange.getResponseBody();
+            os.write(response.getBytes());
+            os.close();
+        }
+
+        private void handleMethodNotAllowed(HttpExchange exchange) throws IOException {
+            // Handle 405 Method Not Allowed error
+            exchange.sendResponseHeaders(405, 0);
+            OutputStream os = exchange.getResponseBody();
+            os.close();
+        }
+    }
+}
